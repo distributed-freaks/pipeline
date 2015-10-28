@@ -15,7 +15,7 @@
     "customImports" : null,
     "customSparkConf" : {
       "spark.executor.cores" : "2",
-      "spark.master" : "local[*]",
+      "spark.master" : "local[2]",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
       "spark.cassandra.connection.host" : "127.0.0.1",
