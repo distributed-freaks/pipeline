@@ -71,7 +71,7 @@ RUN \
  && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
  && tar xvzf spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
  && rm spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
- && mkdir -p ~/pipeline/logs/spark-jobserver
+ && mkdir -p /root/pipeline/logs/spark-jobserver
 
 RUN \
 # Retrieve Latest Datasets, Configs, Code, and Start Scripts
@@ -80,8 +80,8 @@ RUN \
  && chmod a+rx *.sh \
 
 # Spark Job Server (2 of 2)
- && ln ~/pipeline/config/spark-jobserver/pipeline.sh ~/spark-jobserver-0.5.2/config \
- && ln ~/pipeline/config/spark-jobserver/pipeline.conf ~/spark-jobserver-0.5.2/config \
+ && ln /root/pipeline/config/spark-jobserver/pipeline.sh /root/spark-jobserver-0.5.2/config \
+ && ln /root/pipeline/config/spark-jobserver/pipeline.conf /root/spark-jobserver-0.5.2/config \
  && cd /root/spark-jobserver-0.5.2 \
  && /root/sbt/bin/sbt job-server-tests/package \
  && bin/server_package.sh pipeline \
@@ -90,8 +90,8 @@ RUN \
  && cd /root \
 
 # .profile Shell Environment Variables
- && mv ~/.profile ~/.profile.orig \
- && ln -s ~/pipeline/config/bash/.profile ~/.profile \
+ && mv /root/.profile /root/.profile.orig \
+ && ln -s /root/pipeline/config/bash/.profile /root/.profile \
 
 # Sbt Assemble Feeder Producer App
  && cd /root/pipeline \
