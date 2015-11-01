@@ -12,7 +12,7 @@ RUN \
  && apt-get install -y vim \
 
 # Start in Home Dir (/root)
- && cd ~ \
+ && cd /root \
 
 # Git
  && apt-get install -y git \
@@ -30,7 +30,7 @@ RUN \
  && ln -s /root/sbt/bin/sbt /usr/local/bin \
 
 # Get Latest Pipeline Code
- && cd ~ \
+ && cd /root \
  && git clone https://github.com/distributed-freaks/pipeline.git \
 
 # Sbt Clean
@@ -38,7 +38,7 @@ RUN \
 
 RUN \
 # Start from ~
- cd ~ \
+ cd /root \
 
 # MySql (Required by Hive Metastore)
 # Generic Install?  http://dev.mysql.com/doc/refman/5.7/en/binary-installation.html
@@ -75,30 +75,30 @@ RUN \
 
 RUN \
 # Retrieve Latest Datasets, Configs, Code, and Start Scripts
- cd ~/pipeline \
+ cd /root/pipeline \
  && git reset --hard && git pull \
  && chmod a+rx *.sh \
 
 # Spark Job Server (2 of 2)
  && ln ~/pipeline/config/spark-jobserver/pipeline.sh ~/spark-jobserver-0.5.2/config \
  && ln ~/pipeline/config/spark-jobserver/pipeline.conf ~/spark-jobserver-0.5.2/config \
- && cd ~/spark-jobserver-0.5.2 \
+ && cd /root/spark-jobserver-0.5.2 \
  && /root/sbt/bin/sbt job-server-tests/package \
  && bin/server_package.sh pipeline \
  && cp /tmp/job-server/* . \
  && rm -rf /tmp/job-server \
- && cd ~ \
+ && cd /root \
 
 # .profile Shell Environment Variables
  && mv ~/.profile ~/.profile.orig \
  && ln -s ~/pipeline/config/bash/.profile ~/.profile \
 
 # Sbt Assemble Feeder Producer App
- && cd ~/pipeline \
+ && cd /root/pipeline \
  && /root/sbt/bin/sbt feeder/assembly \
 
 # Sbt Package Streaming Consumer App
- && cd ~/pipeline \
+ && cd /root/pipeline \
  && /root/sbt/bin/sbt streaming/package
 
 WORKDIR /root
