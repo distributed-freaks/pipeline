@@ -24,7 +24,7 @@ RUN \
  && apt-get install -y default-jdk \
 
 # Sbt
- && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/Sbt-0.13.8.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/sbt-0.13.8.tgz \
  && tar xvzf sbt-0.13.8.tgz \
  && rm sbt-0.13.8.tgz \
  && ln -s /root/sbt/bin/sbt /usr/local/bin \
