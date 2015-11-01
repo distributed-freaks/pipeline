@@ -24,7 +24,7 @@ RUN \
  && apt-get install -y default-jdk \
 
 # Sbt
- && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/sbt-0.13.8.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/Sbt-0.13.8.tgz \
  && tar xvzf sbt-0.13.8.tgz \
  && rm sbt-0.13.8.tgz \
  && ln -s /root/sbt/bin/sbt /usr/local/bin \
@@ -34,7 +34,7 @@ RUN \
  && git clone https://github.com/distributed-freaks/pipeline.git \
 
 # Sbt Clean
- && sbt clean clean-files
+ && /root/sbt/bin/sbt clean clean-files
 
 RUN \
 # Start from ~
@@ -83,7 +83,7 @@ RUN \
  && ln ~/pipeline/config/spark-jobserver/pipeline.sh ~/spark-jobserver-0.5.2/config \
  && ln ~/pipeline/config/spark-jobserver/pipeline.conf ~/spark-jobserver-0.5.2/config \
  && cd ~/spark-jobserver-0.5.2 \
- && sbt job-server-tests/package \
+ && /root/sbt/bin/sbt job-server-tests/package \
  && bin/server_package.sh pipeline \
  && cp /tmp/job-server/* . \
  && rm -rf /tmp/job-server \
@@ -95,10 +95,10 @@ RUN \
 
 # Sbt Assemble Feeder Producer App
  && cd ~/pipeline \
- && sbt feeder/assembly \
+ && /root/sbt/bin/sbt feeder/assembly \
 
 # Sbt Package Streaming Consumer App
  && cd ~/pipeline \
- && sbt streaming/package
+ && /root/sbt/bin/sbt streaming/package
 
 WORKDIR /root
