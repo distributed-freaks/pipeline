@@ -24,7 +24,7 @@ RUN \
  && apt-get install -y default-jdk \
 
 # Sbt
- && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/sbt-0.13.8.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/sbt-0.13.8.tgz \
  && tar xvzf sbt-0.13.8.tgz \
  && rm sbt-0.13.8.tgz \
  && ln -s /root/sbt/bin/sbt /usr/local/bin \
@@ -47,31 +47,28 @@ RUN \
  && apt-get install -y libmysql-java \
 
 # Apache Cassandra
-# && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/apache-cassandra-2.2.0-bin.tar.gz \
- && wget http://archive.apache.org/dist/cassandra/2.2.0/apache-cassandra-2.2.0-bin.tar.gz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/apache-cassandra-2.2.0-bin.tar.gz \
  && tar xvzf apache-cassandra-2.2.0-bin.tar.gz \
  && rm apache-cassandra-2.2.0-bin.tar.gz \
 
 # Apache Kafka (Confluent Distribution)
-# && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/confluent-1.0-2.10.4.tar.gz \
- && wget http://packages.confluent.io/archive/1.0/confluent-1.0-2.10.4.tar.gz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/confluent-1.0-2.10.4.tar.gz \
  && tar xvzf confluent-1.0-2.10.4.tar.gz \
  && rm confluent-1.0-2.10.4.tar.gz \
 
 # Apache Spark
- && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/spark-1.4.1-bin-fluxcapacitor.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-1.4.1-bin-fluxcapacitor.tgz \
  && tar xvzf spark-1.4.1-bin-fluxcapacitor.tgz \
  && rm spark-1.4.1-bin-fluxcapacitor.tgz \
 
 # Spark Notebook
  && apt-get install -y screen \
-# && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
- && wget https://s3.eu-central-1.amazonaws.com/spark-notebook/emr/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
  && tar xvzf spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
  && rm spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
 
 # Spark Job Server (1 of 2)
- && wget https://s3.amazonaws.com/fluxcapacitor.com/packages/spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
  && tar xvzf spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
  && rm spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
  && mkdir -p ~/pipeline/logs/spark-jobserver
