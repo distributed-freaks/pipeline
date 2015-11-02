@@ -23,7 +23,7 @@ zookeeper-server-stop
 pkill -f QuorumPeerMain
 
 echo ...Stopping Spark-Notebook...
-screen -X -S "snb" quit && rm -rf $DEV_INSTALL_HOME/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet/RUNNING_PID
+screen -X -S "snb" quit && rm -rf $DEV_INSTALL_HOME/spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet/RUNNING_PID
 
 echo ...Stopping Cassandra...
 pkill -f CassandraDaemon
