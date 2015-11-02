@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p /root/pipeline/logs/spark
+
 #echo ...Creating Kafka Topics...
 #kafka-topics --zookeeper localhost:2181 --create --topic ratings --partitions 1 --replication-factor 1
 
