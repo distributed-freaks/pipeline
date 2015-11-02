@@ -63,9 +63,9 @@ RUN \
 
 # Spark Notebook
  && apt-get install -y screen \
- && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
- && tar xvzf spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
- && rm spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && tar xvzf spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && rm spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
 
 # Spark Job Server (1 of 2)
  && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-jobserver-0.5.2-fluxcapacitor.tar.gz \

@@ -56,7 +56,7 @@ export PATH=$PATH:$SBT_HOME/bin
 export SBT_OPTS="-Xmx10G -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=2G"
 
 # Spark Notebook
-export SPARK_NOTEBOOK_HOME=$DEV_INSTALL_HOME/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet
+export SPARK_NOTEBOOK_HOME=$DEV_INSTALL_HOME/spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet
 export PATH=$PATH:$SPARK_NOTEBOOK_HOME/bin
 
 # Spark JobServer
