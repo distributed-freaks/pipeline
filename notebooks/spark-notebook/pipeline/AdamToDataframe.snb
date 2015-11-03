@@ -239,7 +239,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@295fe93e\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\n"
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@61142bc2\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\n"
     }, {
       "metadata" : { },
       "data" : {

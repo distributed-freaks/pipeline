@@ -11,7 +11,7 @@
     "trusted" : true,
     "customLocalRepo" : "/root/.ivy2",
     "customRepos" : null,
-    "customDeps" : [ "org.bdgenomics.adam % adam-core % 0.15.0", "- org.apache.hadoop % hadoop-client %   _", "- org.apache.spark  % spark-core    %   _", "- org.scala-lang    %     _         %   _", "- org.scoverage     %     _         %   _", "- org.apache.spark  % sql           %   _", "com.datastax.spark % spark-cassandra-connector_2.10 % 1.2.3" ],
+    "customDeps" : [ "org.bdgenomics.adam % adam-core % 0.15.0", "- org.apache.hadoop % hadoop-client %   _", "- org.apache.spark  % spark-core    %   _", "- org.scala-lang    %     _         %   _", "- org.scoverage     %     _         %   _", "- org.apache.spark  % sql           %   _", "com.datastax.spark % spark-cassandra-connector_2.10 % 1.4.0" ],
     "customImports" : null,
     "customArgs" : null,
     "customSparkConf" : {
@@ -25,7 +25,10 @@
       "spark.serializer" : "org.apache.spark.serializer.KryoSerializer",
       "spark.kryo.registrator" : "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
       "spark.kryoserializer.buffer.mb" : "4",
-      "spark.kryo.referenceTracking" : "true"
+      "spark.kryo.referenceTracking" : "true",
+      "spark.cassandra.output.batch.grouping.key" : "None",
+      "spark.cassandra.output.batch.size.rows" : "10",
+      "spark.cassandra.output.batch.size.bytes" : "2048"
     }
   },
   "cells" : [ {
@@ -43,7 +46,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "import org.apache.spark.rdd.RDD\nsqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@65cc8946\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.Row\n"
+      "text" : "import org.apache.spark.rdd.RDD\nsqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@13ff7337\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.Row\n"
     }, {
       "metadata" : { },
       "data" : {
@@ -234,12 +237,12 @@
         "text/html" : ""
       },
       "output_type" : "execute_result",
-      "execution_count" : 29
+      "execution_count" : 9
     } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### And covert Dataframes aggregates to RDDs"
+    "source" : "### Convert Dataframe aggregates to RDDs"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -251,14 +254,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "countsByPop: org.apache.spark.rdd.RDD[serCtx.PopAlleleCount] = MapPartitionsRDD[36] at collect at <console>:83\n"
+      "text" : "countsByPop: org.apache.spark.rdd.RDD[serCtx.PopAlleleCount] = MapPartitionsRDD[25] at collect at <console>:70\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "MapPartitionsRDD[36] at collect at &lt;console&gt;:83"
+        "text/html" : "MapPartitionsRDD[25] at collect at &lt;console&gt;:70"
       },
       "output_type" : "execute_result",
-      "execution_count" : 30
+      "execution_count" : 10
     } ]
   }, {
     "metadata" : {
@@ -271,23 +274,27 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "countAll: org.apache.spark.rdd.RDD[serCtx.PopAlleleCount] = MapPartitionsRDD[38] at collect at <console>:83\n"
+      "text" : "countAll: org.apache.spark.rdd.RDD[serCtx.PopAlleleCount] = MapPartitionsRDD[34] at collect at <console>:70\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "MapPartitionsRDD[38] at collect at &lt;console&gt;:83"
+        "text/html" : "MapPartitionsRDD[34] at collect at &lt;console&gt;:70"
       },
       "output_type" : "execute_result",
-      "execution_count" : 31
+      "execution_count" : 11
     } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Now we can save countsByPop and countAll to Cassandra for querying"
+    "source" : "### Now we can save countsByPop and countAll RDDs to Cassandra for querying"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "A schema could look like...\n\n<pre>\nCREATE TABLE pop_allele_count (\n  population: text,\n  chromosome: text,\n  start: long,\n  ref: text,\n  alt: text,\n  refCnt: long,\n  altCnt: long,\n  PRIMARY KEY (population, chromosome, start) \n  );\n\nSELECT * FROM pop_allele_count WHERE population = 'ALL' AND chromosome = '22' \n           AND start >= 16500000 AND start < 16750000;\n</pre>"
+    "source" : "### A schema could look like...\n\n<pre>\nCREATE TABLE pop_allele_count (\n  population text,\n  chromosome text,\n  start double,\n  ref text,\n  alt text,\n  refcnt double,\n  altcnt double,\n  PRIMARY KEY (population, chromosome, start) \n  );\n</pre>\n\nThen we can query like this...\n\n<pre>\nSELECT * FROM pop_allele_count WHERE population = 'ALL' AND chromosome = '22' \n           AND start >= 16500000 AND start < 16750000;\n</pre>"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Check the number of records in the RDDs"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -299,14 +306,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res20: Long = 15876\n"
+      "text" : "res7: Long = 15876\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : "15876"
       },
       "output_type" : "execute_result",
-      "execution_count" : 32
+      "execution_count" : 12
     } ]
   }, {
     "metadata" : {
@@ -319,15 +326,19 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res21: Long = 1134\n"
+      "text" : "res8: Long = 1134\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : "1134"
       },
       "output_type" : "execute_result",
-      "execution_count" : 33
+      "execution_count" : 13
     } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Import libraries required for Spark to access Cassandra"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -346,8 +357,12 @@
         "text/html" : ""
       },
       "output_type" : "execute_result",
-      "execution_count" : 40
+      "execution_count" : 14
     } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create a Cassandra Context using the current Spark Context"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -359,15 +374,19 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "cc: com.datastax.spark.connector.cql.CassandraConnector = com.datastax.spark.connector.cql.CassandraConnector@2a422d61\n"
+      "text" : "cc: com.datastax.spark.connector.cql.CassandraConnector = com.datastax.spark.connector.cql.CassandraConnector@79f6fdb3\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "com.datastax.spark.connector.cql.CassandraConnector@2a422d61"
+        "text/html" : "com.datastax.spark.connector.cql.CassandraConnector@79f6fdb3"
       },
       "output_type" : "execute_result",
-      "execution_count" : 41
+      "execution_count" : 15
     } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create a Cassandra keyspace to hold our table(s)"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -379,15 +398,19 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res27: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
+      "text" : "res9: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : "ResultSet[ exhausted: true, Columns[]]"
       },
       "output_type" : "execute_result",
-      "execution_count" : 42
+      "execution_count" : 16
     } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Drop any existing table and create a new one"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -399,14 +422,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res28: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
+      "text" : "res10: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : "ResultSet[ exhausted: true, Columns[]]"
       },
       "output_type" : "execute_result",
-      "execution_count" : 43
+      "execution_count" : 17
     } ]
   }, {
     "metadata" : {
@@ -419,15 +442,19 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res29: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
+      "text" : "res11: com.datastax.driver.core.ResultSet = ResultSet[ exhausted: true, Columns[]]\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : "ResultSet[ exhausted: true, Columns[]]"
       },
       "output_type" : "execute_result",
-      "execution_count" : 44
+      "execution_count" : 18
     } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Use the saveToCassandra RDD method to save both the RDD contents to a Cassandra table"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -436,16 +463,34 @@
     },
     "cell_type" : "code",
     "source" : "countsByPop.saveToCassandra(\"pipeline\",\"pop_allele_count\", SomeColumns(\"population\",\"chromosome\",\"start\",\"ref\",\"alt\",\"refcnt\",\"altcnt\")) ",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val",
-    "outputs" : [ ]
+    "source" : "countAll.saveToCassandra(\"pipeline\",\"pop_allele_count\", SomeColumns(\"population\",\"chromosome\",\"start\",\"ref\",\"alt\",\"refcnt\",\"altcnt\")) ",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 21
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Check results\n\nAt this point you should be able to query Cassandra to check how many records have been written:\n\n<pre>\n$ cqlsh\n\nConnected to Test Cluster at 127.0.0.1:9042.\n[cqlsh 5.0.1 | Cassandra 2.2.0 | CQL spec 3.3.0 | Native protocol v4]\nUse HELP for help.\ncqlsh:pipeline> select count(*) from pipeline.pop_allele_count ;\n\n count\n-------\n 17010\n\ncqlsh:pipeline> SELECT * FROM pop_allele_count \nWHERE population = 'ALL' \nAND chromosome = '22' \nAND start >= 16500000 \nAND start < 16750000;\n\n population | chromosome | start      | alt | altcnt | ref | refcnt\n------------+------------+------------+-----+--------+-----+--------\n        ALL |         22 | 1.6505e+07 |   T |     57 |   C |   2009\n        ALL |         22 | 1.6508e+07 |   A |      1 |   C |   2065\n        ALL |         22 |  1.652e+07 |   G |    146 |   C |   1920\n        ALL |         22 | 1.6524e+07 |   T |     19 |   G |   2047\n        ALL |         22 | 1.6535e+07 |   T |     13 |   G |   2053\n        ALL |         22 | 1.6543e+07 |   C |     35 |   T |   2031\n        ALL |         22 | 1.6554e+07 |   T |     12 |   C |   2054\n</pre>"
   } ],
   "nbformat" : 4
 }
