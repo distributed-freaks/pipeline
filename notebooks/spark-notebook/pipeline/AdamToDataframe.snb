@@ -13,9 +13,10 @@
     "customRepos" : null,
     "customDeps" : [ "org.bdgenomics.adam % adam-core % 0.15.0", "- org.apache.hadoop % hadoop-client %   _", "- org.apache.spark  % spark-core    %   _", "- org.scala-lang    %     _         %   _", "- org.scoverage     %     _         %   _" ],
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : {
       "spark.executor.cores" : "2",
-      "spark.master" : "local[*]",
+      "spark.master" : "spark://127.0.0.1:7077",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
       "spark.cassandra.connection.host" : "127.0.0.1",
@@ -24,7 +25,8 @@
       "spark.serializer" : "org.apache.spark.serializer.KryoSerializer",
       "spark.kryo.registrator" : "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
       "spark.kryoserializer.buffer.mb" : "4",
-      "spark.kryo.referenceTracking" : "true"
+      "spark.kryo.referenceTracking" : "true",
+      "spark.sql.shuffle.partitions" : "16"
     }
   },
   "cells" : [ {
@@ -291,7 +293,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "flatgts.cache()",
@@ -313,7 +315,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "gdf.cache()\n()",
