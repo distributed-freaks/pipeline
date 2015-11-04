@@ -45,7 +45,18 @@
     },
     "cell_type" : "code",
     "source" : "import org.bdgenomics.formats.avro.Genotype\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.bdgenomics.formats.avro.Genotype\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\nimport org.apache.spark.rdd.RDD\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -58,7 +69,18 @@
     },
     "cell_type" : "code",
     "source" : "val dataRoot = \"/root/pipeline/datasets\"",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dataRoot: String = /root/pipeline/datasets\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/root/pipeline/datasets"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -71,7 +93,18 @@
     },
     "cell_type" : "code",
     "source" : "val adamFile = s\"$dataRoot/chr22-sample13.adam\"",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "adamFile: String = /root/pipeline/datasets/chr22-sample13.adam\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/root/pipeline/datasets/chr22-sample13.adam"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -84,7 +117,18 @@
     },
     "cell_type" : "code",
     "source" : "val gts: RDD[Genotype] = sparkContext.adamLoad(adamFile)",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "gts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MapPartitionsRDD[1] at map at ADAMContext.scala:132\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[1] at map at ADAMContext.scala:132"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -97,7 +141,18 @@
     },
     "cell_type" : "code",
     "source" : "gts.count",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res2: Long = 1302756\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1302756"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -110,7 +165,18 @@
     },
     "cell_type" : "code",
     "source" : "gts.first",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res3: org.bdgenomics.formats.avro.Genotype = {\"variant\": {\"contig\": {\"contigName\": \"22\", \"contigLength\": null, \"contigMD5\": null, \"referenceURL\": null, \"assembly\": null, \"species\": null}, \"start\": 17221997, \"end\": 17221998, \"referenceAllele\": \"G\", \"alternateAllele\": \"A\", \"svAllele\": null}, \"variantCallingAnnotations\": {\"variantCallErrorProbability\": 100.0, \"variantIsPassing\": true, \"variantFilters\": [], \"readDepth\": null, \"downsampled\": null, \"baseQRankSum\": null, \"clippingRankSum\": null, \"fisherStrandBiasPValue\": null, \"haplotypeScore\": null, \"inbreedingCoefficient\": null, \"rmsMapQ\": null, \"mapq0Reads\": null, \"mqRankSum\": null, \"variantQualityByDepth\": null, \"readPositionRankSum\": null, \"vqslod\": null, \"culprit\": null, \"usedForNegativeTrainingSet\": null, \"usedForPositiveTrainingSet\": n..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "{&quot;variant&quot;: {&quot;contig&quot;: {&quot;contigName&quot;: &quot;22&quot;, &quot;contigLength&quot;: null, &quot;contigMD5&quot;: null, &quot;referenceURL&quot;: null, &quot;assembly&quot;: null, &quot;species&quot;: null}, &quot;start&quot;: 17221997, &quot;end&quot;: 17221998, &quot;referenceAllele&quot;: &quot;G&quot;, &quot;alternateAllele&quot;: &quot;A&quot;, &quot;svAllele&quot;: null}, &quot;variantCallingAnnotations&quot;: {&quot;variantCallErrorProbability&quot;: 100.0, &quot;variantIsPassing&quot;: true, &quot;variantFilters&quot;: [], &quot;readDepth&quot;: null, &quot;downsampled&quot;: null, &quot;baseQRankSum&quot;: null, &quot;clippingRankSum&quot;: null, &quot;fisherStrandBiasPValue&quot;: null, &quot;haplotypeScore&quot;: null, &quot;inbreedingCoefficient&quot;: null, &quot;rmsMapQ&quot;: null, &quot;mapq0Reads&quot;: null, &quot;mqRankSum&quot;: null, &quot;variantQualityByDepth&quot;: null, &quot;readPositionRankSum&quot;: null, &quot;vqslod&quot;: null, &quot;culprit&quot;: null, &quot;usedForNegativeTrainingSet&quot;: null, &quot;usedForPositiveTrainingSet&quot;: null}, &quot;sampleId&quot;: &quot;HG00119&quot;, &quot;sampleDescription&quot;: null, &quot;processingDescription&quot;: null, &quot;alleles&quot;: [&quot;Ref&quot;, &quot;Ref&quot;], &quot;expectedAlleleDosage&quot;: null, &quot;referenceReadDepth&quot;: null, &quot;alternateReadDepth&quot;: null, &quot;readDepth&quot;: null, &quot;minReadDepth&quot;: null, &quot;genotypeQuality&quot;: null, &quot;genotypeLikelihoods&quot;: [0, 12, 50], &quot;nonReferenceLikelihoods&quot;: [], &quot;strandBiasComponents&quot;: [], &quot;splitFromMultiAllelic&quot;: false, &quot;isPhased&quot;: true, &quot;phaseSetId&quot;: null, &quot;phaseQuality&quot;: null}"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -123,7 +189,18 @@
     },
     "cell_type" : "code",
     "source" : "val snpgts = gts.filter{g => \n               val bases = Set(\"A\",\"T\",\"G\",\"C\")\n               bases.contains(g.getVariant.getReferenceAllele) && \n                                      bases.contains(g.getVariant.getAlternateAllele)\n          }",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "snpgts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MapPartitionsRDD[2] at filter at <console>:59\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[2] at filter at &lt;console&gt;:59"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -136,7 +213,18 @@
     },
     "cell_type" : "code",
     "source" : "snpgts.count",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: Long = 1238328\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1238328"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -149,7 +237,18 @@
     },
     "cell_type" : "code",
     "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@61142bc2\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 9
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -162,7 +261,18 @@
     },
     "cell_type" : "code",
     "source" : "import sys.process._",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import sys.process._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -175,7 +285,18 @@
     },
     "cell_type" : "code",
     "source" : "val panelFile = s\"$dataRoot/ALL.panel\"",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "panelFile: String = /root/pipeline/datasets/ALL.panel\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/root/pipeline/datasets/ALL.panel"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -188,7 +309,18 @@
     },
     "cell_type" : "code",
     "source" : "s\"wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel -O ${panelFile}\"!!",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nres5: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 12
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -197,7 +329,18 @@
     },
     "cell_type" : "code",
     "source" : "s\"head $panelFile\" !!",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nres6: String = \n\"sample\tpop\tsuper_pop\tgender\t\t\nHG00096\tGBR\tEUR\tmale\nHG00097\tGBR\tEUR\tfemale\nHG00099\tGBR\tEUR\tfemale\nHG00100\tGBR\tEUR\tfemale\nHG00101\tGBR\tEUR\tmale\nHG00102\tGBR\tEUR\tfemale\nHG00103\tGBR\tEUR\tmale\nHG00105\tGBR\tEUR\tmale\nHG00106\tGBR\tEUR\tfemale\n\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "sample\tpop\tsuper_pop\tgender\t\t\nHG00096\tGBR\tEUR\tmale\nHG00097\tGBR\tEUR\tfemale\nHG00099\tGBR\tEUR\tfemale\nHG00100\tGBR\tEUR\tfemale\nHG00101\tGBR\tEUR\tmale\nHG00102\tGBR\tEUR\tfemale\nHG00103\tGBR\tEUR\tmale\nHG00105\tGBR\tEUR\tmale\nHG00106\tGBR\tEUR\tfemale\n"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 13
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -210,7 +353,18 @@
     },
     "cell_type" : "code",
     "source" : "import scala.io.Source\ndef extract(filter: (String, String) => Boolean= (s, t) => true) = Source.fromFile(panelFile).getLines().map( line => {\n  val toks = line.split(\"\\t\").toList\n  toks(0) -> toks(1)\n}).toMap.filter( tup => filter(tup._1, tup._2) )\n  \n// panel extract from file, filtering by the 2 populations\ndef panel: Map[String,String] = \n  extract((sampleID: String, pop: String) => true) \n  \n// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import scala.io.Source\nextract: (filter: (String, String) => Boolean)scala.collection.immutable.Map[String,String]\npanel: Map[String,String]\nbPanel: org.apache.spark.broadcast.Broadcast[Map[String,String]] = Broadcast(4)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Broadcast(4)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -223,7 +377,18 @@
     },
     "cell_type" : "code",
     "source" : "val finalGts = snpgts.filter{g => bPanel.value.contains(g.getSampleId)}",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "finalGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MapPartitionsRDD[3] at filter at <console>:81\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[3] at filter at &lt;console&gt;:81"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -232,7 +397,18 @@
     },
     "cell_type" : "code",
     "source" : "finalGts.count",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res7: Long = 1171422\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1171422"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -245,7 +421,18 @@
     },
     "cell_type" : "code",
     "source" : "def variantid(g: Genotype): String = {\n  var v = g.getVariant\n  s\"${v.getContig.getContigName}\"\n}",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "variantid: (g: org.bdgenomics.formats.avro.Genotype)String\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -254,7 +441,18 @@
     },
     "cell_type" : "code",
     "source" : "val allelesToPair = (g: Genotype, ga: org.bdgenomics.formats.avro.GenotypeAllele) => ga match {\n  case org.bdgenomics.formats.avro.GenotypeAllele.Ref => (1L, 0L)\n  case org.bdgenomics.formats.avro.GenotypeAllele.Alt => (0L, 1L)\n  case _ => (0L, 0L)\n}",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "allelesToPair: (org.bdgenomics.formats.avro.Genotype, org.bdgenomics.formats.avro.GenotypeAllele) => (Long, Long) = <function2>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "&lt;function2&gt;"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 18
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -271,7 +469,18 @@
     },
     "cell_type" : "code",
     "source" : "object gCtx extends java.io.Serializable {\n  case class FlatGenotype(\n  population: String,\n  sampleId: String,\n  chromosome: String,\n  start: Long,\n  ref: String,\n  alt: String,\n  refCnt: Long,\n  altCnt: Long\n    )\n}\nimport gCtx._\n    ",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined module gCtx\nimport gCtx._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -288,7 +497,18 @@
     },
     "cell_type" : "code",
     "source" : "val flatgts = finalGts.flatMap{ g => \n               g.getAlleles.map{ ga => \n                 val al = allelesToPair(g, ga)\n                 FlatGenotype(bPanel.value.getOrElse(g.getSampleId(), \"\"),\n                              g.getSampleId,\n                              variantid(g),\n                              g.getVariant.getStart,\n                              g.getVariant.getReferenceAllele,\n                              g.getVariant.getAlternateAllele,\n                              al._1,\n                              al._2\n                               )\n                               }\n}",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "flatgts: org.apache.spark.rdd.RDD[gCtx.FlatGenotype] = MapPartitionsRDD[4] at flatMap at <console>:92\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[4] at flatMap at &lt;console&gt;:92"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 20
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -297,7 +517,18 @@
     },
     "cell_type" : "code",
     "source" : "flatgts.cache()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res8: flatgts.type = MapPartitionsRDD[4] at flatMap at <console>:92\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[4] at flatMap at &lt;console&gt;:92"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 21
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -310,7 +541,18 @@
     },
     "cell_type" : "code",
     "source" : "val gdf = flatgts.toDF()\n()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "gdf: org.apache.spark.sql.DataFrame = [population: string, sampleId: string, chromosome: string, start: bigint, ref: string, alt: string, refCnt: bigint, altCnt: bigint]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 22
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -319,7 +561,14 @@
     },
     "cell_type" : "code",
     "source" : "gdf.cache()\n()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 23
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -328,7 +577,14 @@
     },
     "cell_type" : "code",
     "source" : "gdf.write.save(s\"$dataRoot/flat-genotypes13\")",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 24
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,

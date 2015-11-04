@@ -44,7 +44,18 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.rdd.RDD\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.Row",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.rdd.RDD\nsqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@13ff7337\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.Row\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -57,7 +68,18 @@
     },
     "cell_type" : "code",
     "source" : "val dataRoot = \"/root/pipeline/datasets\"",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dataRoot: String = /root/pipeline/datasets\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/root/pipeline/datasets"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -70,7 +92,18 @@
     },
     "cell_type" : "code",
     "source" : "val dataFile = s\"$dataRoot/flat-genotypes13\"",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dataFile: String = /root/pipeline/datasets/flat-genotypes13\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/root/pipeline/datasets/flat-genotypes13"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -83,7 +116,18 @@
     },
     "cell_type" : "code",
     "source" : "val gdf = sqlContext.read.parquet(dataFile)\ngdf.cache()\n()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "gdf: org.apache.spark.sql.DataFrame = [population: string, sampleId: string, chromosome: string, start: bigint, ref: string, alt: string, refCnt: bigint, altCnt: bigint]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -92,7 +136,18 @@
     },
     "cell_type" : "code",
     "source" : "gdf.count",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res3: Long = 2342844\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "2342844"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -105,7 +160,18 @@
     },
     "cell_type" : "code",
     "source" : "val byPopulation = gdf.groupBy(\"population\", \"chromosome\", \"start\", \"ref\", \"alt\").agg(sum(gdf(\"refCnt\")) as \"refCnt\", sum(gdf(\"altCnt\")) as \"altCnt\")\n()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "byPopulation: org.apache.spark.sql.DataFrame = [population: string, chromosome: string, start: bigint, ref: string, alt: string, refCnt: bigint, altCnt: bigint]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -118,7 +184,18 @@
     },
     "cell_type" : "code",
     "source" : "val allPopulations = gdf.groupBy(\"chromosome\", \"start\", \"ref\", \"alt\")\n                                 .agg(sum(gdf(\"refCnt\")) as \"refCnt\", sum(gdf(\"altCnt\")) as \"altCnt\")\n()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "allPopulations: org.apache.spark.sql.DataFrame = [chromosome: string, start: bigint, ref: string, alt: string, refCnt: bigint, altCnt: bigint]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -127,7 +204,18 @@
     },
     "cell_type" : "code",
     "source" : "allPopulations.show",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "+----------+--------+---+---+------+------+\n|chromosome|   start|ref|alt|refCnt|altCnt|\n+----------+--------+---+---+------+------+\n|        22|17699864|  G|  A|  1904|   162|\n|        22|16963544|  A|  G|   924|  1142|\n|        22|17143841|  T|  G|  1547|   519|\n|        22|17586582|  C|  G|   900|  1166|\n|        22|17293393|  G|  A|  2057|     9|\n|        22|17815434|  C|  T|  1897|   169|\n|        22|17518657|  A|  G|  1993|    73|\n|        22|17385485|  C|  A|  2065|     1|\n|        22|17625686|  T|  C|  2046|    20|\n|        22|17008979|  C|  T|  1974|    92|\n|        22|17804722|  G|  A|  1998|    68|\n|        22|17052802|  A|  G|  2063|     3|\n|        22|17783922|  G|  A|  1129|   937|\n|        22|17445922|  G|  A|  2063|     3|\n|        22|17334473|  T|  A|  2051|    15|\n|        22|17047160|  T|  C|   102|  1964|\n|        22|17684251|  G|  A|  2053|    13|\n|        22|17313543|  C|  A|  2063|     3|\n|        22|17712851|  G|  A|  2066|     0|\n|        22|17990492|  C|  T|  2065|     1|\n+----------+--------+---+---+------+------+\n\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -183,7 +271,18 @@
     },
     "cell_type" : "code",
     "source" : "countsByPop.count",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res7: Long = 15876\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "15876"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 12
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -276,6 +375,7 @@
     "cell_type" : "code",
     "source" : "countAll.saveToCassandra(\"pipeline\",\"pop_allele_count\", SomeColumns(\"population\",\"chromosome\",\"start\",\"ref\",\"alt\",\"refcnt\",\"altcnt\")) ",
     "outputs" : [ ]
+
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
