@@ -99,6 +99,10 @@ RUN \
 
 # Sbt Package Streaming Consumer App
  && cd /root/pipeline \
- && /root/sbt/bin/sbt streaming/package
+ && /root/sbt/bin/sbt streaming/package \
+
+# Sbt Compile Fill Ivy "App"
+ && cd /root/pipeline \
+ && /root/sbt/bin/sbt fillIvy/compile
 
 WORKDIR /root

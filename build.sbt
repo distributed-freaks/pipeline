@@ -13,9 +13,15 @@ lazy val streaming = (project in file("streaming"))
                        .settings(globalSettings:_*)
                        .settings(libraryDependencies ++= streamingDeps)
 
+// This repo's goal is to download deps needed in other project, like notebooks
+lazy val fillIvy = (project in file("fill-ivy"))
+                       .settings(name := "Filling Local Ivy Repo")
+                       .settings(globalSettings:_*)
+                       .settings(libraryDependencies ++= moreDeps)
+
 val akkaVersion = "2.3.11"
 val sparkVersion = "1.4.1"
-val sparkCassandraConnectorVersion = "1.4.0-M3"
+val sparkCassandraConnectorVersion = "1.4.0"
 val kafkaVersion = "0.8.2.1"
 val scalaTestVersion = "2.2.4"
 
@@ -37,4 +43,13 @@ lazy val streamingDeps = Seq(
   "org.apache.spark"  %% "spark-streaming"       % sparkVersion % "provided",
   "org.apache.spark"  %% "spark-streaming-kafka" % sparkVersion % "provided",
   "com.databricks"    %% "spark-csv"             % "1.2.0"
+)
+
+lazy val moreDeps = Seq(
+  "org.bdgenomics.adam" % "adam-core" % "0.15.0" excludeAll(
+    ExclusionRule("org.apache.hadoop", "hadoop-client"),
+    ExclusionRule("org.apache.spark", "spark-core_2.10"),
+    ExclusionRule("org.scala-lang"),
+    ExclusionRule("org.scoverage")
+  )
 )
