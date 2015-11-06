@@ -21,7 +21,7 @@
     ],
     "customImports": null,
     "customSparkConf": {
-      "spark.cassandra.connection.host": "127.0.0.1",
+      "spark.cassandra.connection.host": "<cassandra-host>",
       "spark.master": "spark://127.0.0.1:7077",
       "spark.executor.cores": "2",
       "spark.executor.memory": "1024m",

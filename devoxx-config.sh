@@ -23,6 +23,9 @@ chmod 600 ~/.ssh/id_rsa
 #nohup service mysql stop
 #echo ...****Ignore the ERROR 2002s Above****...
 
+# IP address eth0
+IP_eth0=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+
 # Cassandra
 echo ...Configuring Cassandra...
 mv $CASSANDRA_HOME/conf/cassandra-env.sh $CASSANDRA_HOME/conf/cassandra-env.sh.orig
@@ -49,6 +52,7 @@ echo ...Configuring SBT...
 
 # Spark-Notebook
 echo ...Configuring Spark-Notebook...
+sed -i 's/<cassandra-host>/'"${IP_eth0}"'/g' $PIPELINE_HOME/notebooks/spark-notebook/pipeline/*
 ln -s $PIPELINE_HOME/notebooks/spark-notebook/pipeline $SPARK_NOTEBOOK_HOME/notebooks
 
 ## Spark-JobServer
