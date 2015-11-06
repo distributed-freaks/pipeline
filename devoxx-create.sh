@@ -7,9 +7,9 @@ mkdir -p /root/pipeline/logs/spark
 
 echo ...Creating Cassandra Keyspaces Column Families and Tables...
 #cqlsh -e "DROP KEYSPACE IF EXISTS pipeline;"
-cqlsh -e "CREATE KEYSPACE pipeline WITH REPLICATION = { 'class': 'SimpleStrategy',  'replication_factor':1};"
+cqlsh $IP_eth0 -e "CREATE KEYSPACE pipeline WITH REPLICATION = { 'class': 'SimpleStrategy',  'replication_factor':1};"
 #cqlsh -e "USE pipeline; DROP TABLE IF EXISTS real_time_ratings;"
-cqlsh -e "USE pipeline; CREATE TABLE real_time_ratings (fromUserId int, toUserId int, rating int, batchTime bigint, PRIMARY KEY(fromUserId, toUserId));"
+cqlsh $IP_eth0 -e "USE pipeline; CREATE TABLE real_time_ratings (fromUserId int, toUserId int, rating int, batchTime bigint, PRIMARY KEY(fromUserId, toUserId));"
 
 #echo ...Creating Reference Data in Hive...
 ##spark-sql --jars $MYSQL_CONNECTOR_JAR -e 'DROP TABLE IF EXISTS gender_json_file'

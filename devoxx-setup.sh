@@ -12,6 +12,9 @@ git reset --hard && git pull
 # Make the scripts executable
 chmod a+rx *.sh
 
+# IP address eth0
+export IP_eth0=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+
 # Setup tools
 ./devoxx-config.sh
 
