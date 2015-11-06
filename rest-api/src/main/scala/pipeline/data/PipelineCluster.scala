@@ -38,8 +38,8 @@ object PipelineCluster {
     session.prepare(s"""|SELECT * from $alleleTable
                         |WHERE population = ?
                         |AND chromosome = ?
-                        |AND start > ?
-                        |AND start < ? ;""".stripMargin)
+                        |AND start >= ?
+                        |AND start =< ? ;""".stripMargin)
 
   def rangeQuery(pop: String, chromosome: String, start: Int, end: Int): Seq[AlleleRecord] = {
     val resultSet = session.execute(
