@@ -19,7 +19,7 @@
       "spark.master" : "spark://127.0.0.1:7077",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host" : "<cassandra-host>",
+      "spark.cassandra.connection.host" : "172.17.0.7",
       "spark.eventLog.enabled" : "true",
       "spark.executor.memory" : "512m",
       "spark.serializer" : "org.apache.spark.serializer.KryoSerializer",
@@ -35,7 +35,15 @@
   "cells" : [ {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Import sparkSQL classes"
+    "source" : "# Store stats in Cassandra"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "In this notebook, we'll take the data from the [Adam to Dataframe](/notebooks/pipeline/AdamToDataframe.snb) notebook and compute some statistics on the saved data.\n\nMany very helpful stats can be computed on such dataset, here we'll focus on [**allele frequencies**](https://en.wikipedia.org/wiki/Allele_frequency)."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create SQL context to use DataFrame"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -48,7 +56,11 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Data directory"
+    "source" : "## The source"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We'll read the dataset created in the previous notebook: the Parquet formated FlatGenotypes"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -56,25 +68,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val dataRoot = \"/root/pipeline/datasets\"",
+    "source" : "val dataFile = s\"/tmp/flat-genotypes13\"",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "Parquet formated FlatGenotypes"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "val dataFile = s\"$dataRoot/flat-genotypes13\"",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### Load the data: \nWe read the parquet files..."
+    "source" : "### Loading the dataset \n\nUsing the data source api from Spark, we can read the parquet file and already be aware of the structure thanks to the schema stored in it. \n\nWe get back a simple DataFrame with the right structure."
   }, {
     "metadata" : {
       "trusted" : true,
@@ -96,7 +95,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### We do aggregation computations:\n\nCount reference and alternate alleles for each population"
+    "source" : "## Aggregations (sums) per population\n\nCount reference and alternate alleles for each population"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -104,12 +103,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val byPopulation = gdf.groupBy(\"population\", \"chromosome\", \"start\", \"ref\", \"alt\").agg(sum(gdf(\"refCnt\")) as \"refCnt\", sum(gdf(\"altCnt\")) as \"altCnt\")\n()",
+    "source" : "val byPopulation = gdf.groupBy(\"population\", \"chromosome\", \"start\", \"ref\", \"alt\")\n                      .agg(\n                        sum($\"refCnt\") as \"refCnt\", \n                        sum($\"altCnt\") as \"altCnt\"\n                      )\n()",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "And we count of the complete dataset"
+    "source" : "## Aggregations (sums) on the whole dataset"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -117,8 +116,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val allPopulations = gdf.groupBy(\"chromosome\", \"start\", \"ref\", \"alt\")\n                                 .agg(sum(gdf(\"refCnt\")) as \"refCnt\", sum(gdf(\"altCnt\")) as \"altCnt\")\n()",
+    "source" : "val allPopulations = gdf.groupBy(\"chromosome\", \"start\", \"ref\", \"alt\")\n                        .agg(\n                          sum($\"refCnt\") as \"refCnt\", \n                          sum($\"altCnt\") as \"altCnt\"\n                        )\n()",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's take a look at the result"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -126,42 +129,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "allPopulations.show",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### We defined a structure to hold count data"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "object serCtx extends java.io.Serializable {\n  case class PopAlleleCount(\n  population: String,\n  chromosome: String,\n  start: Long,\n  ref: String,\n  alt: String,\n  refcnt: Long,\n  altcnt: Long\n    ) extends java.io.Serializable\n}\nimport serCtx._\n    ",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### Convert Dataframe aggregates to RDDs"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "val countsByPop = byPopulation.rdd.collect {\n   case Row(pop: String, chr: String, start: Long, ref: String, alt: String, refcnt: Long, altcnt: Long) => \n          PopAlleleCount(pop, chr, start, ref, alt, refcnt, altcnt)\n   }",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "val countAll = allPopulations.rdd.collect {\n    case Row(chr: String, start: Long, ref: String, alt: String, refcnt: Long, altcnt: Long) => \n          PopAlleleCount(\"ALL\", chr, start, ref, alt, refcnt, altcnt)\n   }",
+    "source" : "allPopulations",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -170,29 +138,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### A schema could look like...\n\n<pre>\nCREATE TABLE pop_allele_count (\n  population text,\n  chromosome text,\n  start double,\n  ref text,\n  alt text,\n  refcnt double,\n  altcnt double,\n  PRIMARY KEY (population, chromosome, start) \n  );\n</pre>\n\nThen we can query like this...\n\n<pre>\nSELECT * FROM pop_allele_count WHERE population = 'ALL' AND chromosome = '22' \n           AND start >= 16500000 AND start < 16750000;\n</pre>"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### Check the number of records in the RDDs"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "countsByPop.count",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "countAll.count",
-    "outputs" : [ ]
+    "source" : "### A schema could look like...\n\n```sql\nCREATE TABLE pop_allele_count (\n  population text,\n  chromosome text,\n  start double,\n  ref text,\n  alt text,\n  refcnt double,\n  altcnt double,\n  PRIMARY KEY (population, chromosome, start) \n);\n```\n\nThen we can query like this...\n\n```sql\nSELECT * \nFROM pop_allele_count \nWHERE \n  population = 'ALL' AND \n  chromosome = '22'  AND \n  start >= 16500000  AND \n  start < 16750000;\n```"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -201,7 +147,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import com.datastax.spark.connector.cql.CassandraConnector\nimport com.datastax.spark.connector._",
@@ -214,7 +160,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val cc = CassandraConnector(sparkContext.getConf)",
@@ -227,10 +173,10 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "cc.withSessionDo { session => session.execute(s\"CREATE KEYSPACE IF NOT EXISTS pipeline WITH REPLICATION = { 'class':'SimpleStrategy', 'replication_factor':1}\")}",
+    "source" : "cc.withSessionDo { session => \n  session.execute(s\"\"\"\n      CREATE KEYSPACE IF NOT EXISTS pipeline \n        WITH REPLICATION = { 'class':'SimpleStrategy', 'replication_factor':1}\n    \"\"\".stripMargin\n  )\n}",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -240,46 +186,54 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "cc.withSessionDo { session => session.execute(s\"DROP TABLE IF EXISTS pipeline.pop_allele_count\")}",
+    "source" : "cc.withSessionDo { session => \n  session.execute(s\"\"\"\n      DROP TABLE IF EXISTS pipeline.pop_allele_count\n    \"\"\"\n  )}",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "cc.withSessionDo { session => session.execute(s\"CREATE TABLE pipeline.pop_allele_count (population text,chromosome text, start double, ref text, alt text, refCnt double, altCnt double, PRIMARY KEY (population, chromosome, start) );\")}",
+    "source" : "cc.withSessionDo { session => session.execute(s\"\"\"\n      CREATE TABLE pipeline.pop_allele_count (\n        population text,\n        chromosome text,\n        start double,\n        ref text,\n        alt text,\n        ref_cnt double,\n        alt_cnt double,\n        PRIMARY KEY (population, chromosome, start) \n      );\n    \"\"\"\n  )\n}",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Use the saveToCassandra RDD method to save both the RDD contents to a Cassandra table"
+    "source" : "### Use the DataFrame and Data Source API to both contents to a Cassandra table"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "> Note that the names in the DataFrame and the Cassandra tables aren't exactly mathching!\n> \n> Hence, we rename them before calling the save method."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "countsByPop.saveToCassandra(\"pipeline\",\"pop_allele_count\", SomeColumns(\"population\",\"chromosome\",\"start\",\"ref\",\"alt\",\"refcnt\",\"altcnt\")) ",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "countAll.saveToCassandra(\"pipeline\",\"pop_allele_count\", SomeColumns(\"population\",\"chromosome\",\"start\",\"ref\",\"alt\",\"refcnt\",\"altcnt\")) ",
+    "source" : "byPopulation\n    .withColumnRenamed(\"refCnt\", \"ref_cnt\")\n    .withColumnRenamed(\"altCnt\", \"alt_cnt\")\n    .write.format(\"org.apache.spark.sql.cassandra\")\n    .mode(org.apache.spark.sql.SaveMode.Append)\n    .options(Map(\"keyspace\" -> \"pipeline\", \"table\" -> \"pop_allele_count\"))\n    .save()",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Check results\n\nAt this point you should be able to query Cassandra to check how many records have been written:\n\n<pre>\n$ cqlsh\n\nConnected to Test Cluster at 127.0.0.1:9042.\n[cqlsh 5.0.1 | Cassandra 2.2.0 | CQL spec 3.3.0 | Native protocol v4]\nUse HELP for help.\ncqlsh:pipeline> select count(*) from pipeline.pop_allele_count ;\n\n count\n-------\n 17010\n\ncqlsh:pipeline> SELECT * FROM pop_allele_count \nWHERE population = 'ALL' \nAND chromosome = '22' \nAND start >= 16500000 \nAND start < 16750000;\n\n population | chromosome | start      | alt | altcnt | ref | refcnt\n------------+------------+------------+-----+--------+-----+--------\n        ALL |         22 | 1.6505e+07 |   T |     57 |   C |   2009\n        ALL |         22 | 1.6508e+07 |   A |      1 |   C |   2065\n        ALL |         22 |  1.652e+07 |   G |    146 |   C |   1920\n        ALL |         22 | 1.6524e+07 |   T |     19 |   G |   2047\n        ALL |         22 | 1.6535e+07 |   T |     13 |   G |   2053\n        ALL |         22 | 1.6543e+07 |   C |     35 |   T |   2031\n        ALL |         22 | 1.6554e+07 |   T |     12 |   C |   2054\n</pre>"
+    "source" : "> Note that the `allPopulation` DataFrame hasn't the `population` field since it's for the whole dataset\n> \n> Hence, in order to reuse the same table, we'll add the `population` column always containing the `\"ALL\"` value."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "allPopulations\n    .withColumn(\"population\", lit(\"ALL\"))\n    .withColumnRenamed(\"refCnt\", \"ref_cnt\")\n    .withColumnRenamed(\"altCnt\", \"alt_cnt\")\n    .write.format(\"org.apache.spark.sql.cassandra\")\n    .mode(org.apache.spark.sql.SaveMode.Append)\n    .options(Map(\"keyspace\" -> \"pipeline\", \"table\" -> \"pop_allele_count\"))\n    .save()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Check results\n\nAt this point you should be able to query Cassandra to check how many records have been written:\n\n```\n$ cqlsh $IP_eth0\n\nConnected to Test Cluster at 127.0.0.1:9042.\n[cqlsh 5.0.1 | Cassandra 2.2.0 | CQL spec 3.3.0 | Native protocol v4]\nUse HELP for help.\ncqlsh:pipeline> select count(*) from pipeline.pop_allele_count ;\n\n count\n-------\n 17010\n\ncqlsh:pipeline> SELECT * FROM pop_allele_count \nWHERE population = 'ALL' \nAND chromosome = '22' \nAND start >= 16500000 \nAND start < 16750000;\n\n population | chromosome | start      | alt | altcnt | ref | refcnt\n------------+------------+------------+-----+--------+-----+--------\n        ALL |         22 | 1.6505e+07 |   T |     57 |   C |   2009\n        ALL |         22 | 1.6508e+07 |   A |      1 |   C |   2065\n        ALL |         22 |  1.652e+07 |   G |    146 |   C |   1920\n        ALL |         22 | 1.6524e+07 |   T |     19 |   G |   2047\n        ALL |         22 | 1.6535e+07 |   T |     13 |   G |   2053\n        ALL |         22 | 1.6543e+07 |   C |     35 |   T |   2031\n        ALL |         22 | 1.6554e+07 |   T |     12 |   C |   2054\n```"
   } ],
   "nbformat" : 4
 }

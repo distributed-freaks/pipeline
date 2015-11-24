@@ -1,18 +1,21 @@
 # ~/.profile: executed by Bourne-compatible login shells.
 
 if [ "$BASH" ]; then
-  if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
+  if [ -f /root/.bashrc ]; then
+    . /root/.bashrc
   fi
 fi
 
 mesg n
 
+# IP address eth0
+export IP_eth0=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+
 # Dev Install
-export DEV_INSTALL_HOME=~
+export DEV_INSTALL_HOME=/root
 
 # Pipeline Home
-export PIPELINE_HOME=~/pipeline
+export PIPELINE_HOME=$DEV_INSTALL_HOME/pipeline
 
 ###################################################################
 # The following DATA_HOME and LOGS_HOME are not always used by apps

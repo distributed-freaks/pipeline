@@ -25,8 +25,8 @@ object AlleleRecord {
       row.getDouble("start"),
       row.getString("ref"),
       row.getString("alt"),
-      row.getDouble("refcnt"),
-      row.getDouble("altcnt"))
+      row.getDouble("ref_cnt"),
+      row.getDouble("alt_cnt"))
   }
 }
 

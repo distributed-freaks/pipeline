@@ -14,7 +14,7 @@
     "customDeps" : [ "com.datastax.spark:spark-cassandra-connector_2.10:1.4.0-M3", "com.databricks:spark-csv_2.10:1.2.0", "- org.apache.spark % spark-core_2.10 % _", "- org.apache.hadoop % _ % _" ],
     "customImports" : null,
     "customSparkConf" : {
-      "spark.cassandra.connection.host" : "<cassandra-host>",
+      "spark.cassandra.connection.host" : "172.17.0.7",
       "spark.master" : "spark://127.0.0.1:7077",
       "spark.executor.cores" : "2",
       "spark.executor.memory" : "512m",

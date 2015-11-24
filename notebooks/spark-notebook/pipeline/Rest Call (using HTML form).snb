@@ -1,89 +1,77 @@
 {
-  "metadata": {
-    "name": "Rest Call (using HTML form)",
-    "user_save_timestamp": "1970-01-01T00:00:00.000Z",
-    "auto_save_timestamp": "1970-01-01T00:00:00.000Z",
-    "language_info": {
-      "name": "scala",
-      "file_extension": "scala",
-      "codemirror_mode": "text/x-scala"
+  "metadata" : {
+    "name" : "Rest Call (using HTML form)",
+    "user_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
     },
-    "trusted": true,
-    "customLocalRepo": "/root/.ivy2",
-    "customRepos": null,
-    "customDeps": [
-      "com.typesafe.akka % akka-http-experimental_2.10 % 1.0",
-      "com.typesafe.akka % akka-http-spray-json-experimental_2.10 % 1.0"
-    ],
-    "customImports": null,
-    "customArgs": null,
-    "customSparkConf": {
-      "spark.executor.cores": "2",
-      "spark.master": "spark://127.0.0.1:7077",
-      "spark.cores.max": "2",
+    "trusted" : true,
+    "customLocalRepo" : "/root/.ivy2",
+    "customRepos" : null,
+    "customDeps" : [ "com.typesafe.akka % akka-http-experimental_2.10 % 1.0", "com.typesafe.akka % akka-http-spray-json-experimental_2.10 % 1.0" ],
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : {
+      "spark.executor.cores" : "2",
+      "spark.master" : "spark://127.0.0.1:7077",
+      "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host": "<cassandra-host>",
-      "spark.eventLog.enabled": "true",
-      "spark.executor.memory": "512m"
+      "spark.cassandra.connection.host" : "172.17.0.7",
+      "spark.eventLog.enabled" : "true",
+      "spark.executor.memory" : "512m"
     }
   },
-  "cells": [
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "# Querying HTTP service using HTML Form"
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Querying HTTP service using HTML Form"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Prepare Akka HTTP Client"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## Prepare Akka HTTP Client"
+    "cell_type" : "code",
+    "source" : "import scala.concurrent.Future\n\nimport akka.actor.ActorSystem\nimport akka.stream.ActorMaterializer\nimport akka.http.scaladsl.model._\nimport akka.http.scaladsl.Http\n\nimplicit val actorSystem = ActorSystem()\nimplicit val ec = actorSystem.dispatcher\nimplicit val materializer = ActorMaterializer()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## The Response model"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "import scala.concurrent.Future\n\nimport akka.actor.ActorSystem\nimport akka.stream.ActorMaterializer\nimport akka.http.scaladsl.model._\nimport akka.http.scaladsl.Http\n\nimplicit val actorSystem = ActorSystem()\nimplicit val ec = actorSystem.dispatcher\nimplicit val materializer = ActorMaterializer()",
-      "outputs": []
+    "cell_type" : "code",
+    "source" : "object model {\n  case class AlleleRecord(\n    population: String,\n    chromosome: String,\n    start: Double,\n    ref: String,\n    alt: String,\n    refCnt: Double,\n    altCnt: Double)\n\n  import spray.json.DefaultJsonProtocol\n  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport\n\n  object AlleleProtocol extends DefaultJsonProtocol {\n    implicit val alleleRecordFormat = jsonFormat7(AlleleRecord.apply)\n  }\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## The Viz"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "In the following cell, we'll create three _widgets_.\n\n#### The Form\n\nThis widget will render an HTML form allowing the user to adapt the main parameter of the query:\n* population\n* chromosome\n* starting position\n* final position\n\nThe `update` method is hijacked to update the below viz, given the new values for the parameters it will issue a query to the service and shape the result for each viz.\n\nThe `Change` button needs to be clicked to call the upate.\n\n#### The Table\n\nThis widget renders the `AlleleRecord` resulting from the query.\n\n#### The Line Plot\n\nThis widget will plot a line with the position of the alleles in $X$ and the ratio between the alternative count over the total count in $Y$.\n\n**NB**: the two last charts are put side by side in a table row."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## The Response model"
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "object model {\n  case class AlleleRecord(\n    population: String,\n    chromosome: String,\n    start: Double,\n    ref: String,\n    alt: String,\n    refCnt: Double,\n    altCnt: Double)\n\n  import spray.json.DefaultJsonProtocol\n  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport\n\n  object AlleleProtocol extends DefaultJsonProtocol {\n    implicit val alleleRecordFormat = jsonFormat7(AlleleRecord.apply)\n  }\n}",
-      "outputs": []
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## The Viz"
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "In the following cell, we'll create three _widgets_.\n\n#### The Form\n\nThis widget will render an HTML form allowing the user to adapt the main parameter of the query:\n* population\n* chromosome\n* starting position\n* final position\n\nThe `update` method is hijacked to update the below viz, given the new values for the parameters it will issue a query to the service and shape the result for each viz.\n\nThe `Change` button needs to be clicked to call the upate.\n\n#### The Table\n\nThis widget renders the `AlleleRecord` resulting from the query.\n\n#### The Line Plot\n\nThis widget will plot a line with the position of the alleles in $X$ and the ratio between the alternative count over the total count in $Y$.\n\n**NB**: the two last charts are put side by side in a table row."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "output_stream_collapsed": true,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "val tb = widgets.TableChart[Seq[model.AlleleRecord]](Seq(model.AlleleRecord(\"CHB\", \"22\", 0, \"G\", \"A\", 0, 0)))\n\nval lc = widgets.LineChart[Seq[(Double, Double)]](Seq((0d,0d)))\n\nval f = new widgets.Form[(String, Int, Long, Long)] {\n  def query(pop:String, chromosome:Int, start:Long, end:Long) = \n    s\"http://localhost:1111/$pop/$chromosome?start=$start&end=$end\"\n  \n  val title = \"Range query over a population for a chromosome\"\n  \n  def initData = (\"CHB\", 22, 16050982L, 16905526L)\n  \n  val paramsCodec = new Codec[(String, Int, Long, Long), Map[String, String]] {\n    def encode(x:(String, Int, Long, Long)) = Map(\n      \"population\" → x._1,\n      \"chromosome\" → x._2.toString,\n      \"start\" → x._3.toString,\n      \"end\" → x._4.toString\n    ) \n    def decode(x:Map[String, String]) = \n      (x(\"population\"), x(\"chromosome\").toInt, x(\"start\").toLong, x(\"end\").toLong)\n  }\n  \n  val update = { (d:(String, Int, Long, Long)) =>\n    val (pop, chr, st, ed) = d\n    val rf = Http().singleRequest(HttpRequest(uri = query(pop, chr, st, ed)))\n    import scala.concurrent.duration._\n    import akka.http.scaladsl.unmarshalling.Unmarshal\n    import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._\n    import model.AlleleProtocol._\n    val records = rf.flatMap(r => Unmarshal(r.entity).to[Seq[model.AlleleRecord]])\n    val data = scala.concurrent.Await.result(records, 10 seconds)\n\n    tb.applyOn(data)\n    \n    val freqs = data.map { ar =>\n      ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n    }\n    lc.applyOn(freqs)\n    d\n  }\n\n}\nf ++ widgets.row(tb,lc)",
-      "outputs": []
-    }
-  ],
-  "nbformat": 4
+    "cell_type" : "code",
+    "source" : "val tb = widgets.TableChart[Seq[model.AlleleRecord]](Seq(model.AlleleRecord(\"CHB\", \"22\", 0, \"G\", \"A\", 0, 0)))\n\nval lc = widgets.LineChart[Seq[(Double, Double)]](Seq((0d,0d)))\n\nval f = new widgets.Form[(String, Int, Long, Long)] {\n  def query(pop:String, chromosome:Int, start:Long, end:Long) = \n    s\"http://localhost:1111/$pop/$chromosome?start=$start&end=$end\"\n  \n  val title = \"Range query over a population for a chromosome\"\n  \n  def initData = (\"CHB\", 22, 16050982L, 16905526L)\n  \n  val paramsCodec = new Codec[(String, Int, Long, Long), Map[String, String]] {\n    def encode(x:(String, Int, Long, Long)) = Map(\n      \"population\" → x._1,\n      \"chromosome\" → x._2.toString,\n      \"start\" → x._3.toString,\n      \"end\" → x._4.toString\n    ) \n    def decode(x:Map[String, String]) = \n      (x(\"population\"), x(\"chromosome\").toInt, x(\"start\").toLong, x(\"end\").toLong)\n  }\n  \n  val update = { (d:(String, Int, Long, Long)) =>\n    val (pop, chr, st, ed) = d\n    val rf = Http().singleRequest(HttpRequest(uri = query(pop, chr, st, ed)))\n    import scala.concurrent.duration._\n    import akka.http.scaladsl.unmarshalling.Unmarshal\n    import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._\n    import model.AlleleProtocol._\n    val records = rf.flatMap(r => Unmarshal(r.entity).to[Seq[model.AlleleRecord]])\n    val data = scala.concurrent.Await.result(records, 10 seconds)\n\n    tb.applyOn(data)\n    \n    val freqs = data.map { ar =>\n      ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n    }\n    lc.applyOn(freqs)\n    d\n  }\n\n}\nf ++ widgets.row(tb,lc)",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
 }

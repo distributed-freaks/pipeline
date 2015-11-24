@@ -19,7 +19,7 @@
       "spark.master" : "spark://127.0.0.1:7077",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host" : "<cassandra-host>",
+      "spark.cassandra.connection.host" : "172.17.0.7",
       "spark.eventLog.enabled" : "true",
       "spark.executor.memory" : "512m",
       "spark.serializer" : "org.apache.spark.serializer.KryoSerializer",
@@ -32,7 +32,23 @@
   "cells" : [ {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Import some stuff here"
+    "source" : "# Prepare the data in parquet"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "In this notebook, we'll preprocess a bunch data into a form that can be used in further analyses. So we'll do these things:\n1. take genomics data ([**genotypes**](https://en.wikipedia.org/wiki/Genotype)) for several samples/persons\n2. clean the data (removing rare cases)\n3. associating the samples with their population \n4. remove genotypes for which we don't know the origin\n5. simplify the genotypes and encode their value (allele) into a grid space\n6. save the resulting dataset in a new parquet format using a DataFrame"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## ADAM"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "The source data is stored locally in this docker instance and has been created using the 1000genomes datasets (stripped, cleaned).\n\nThis dataset has been formated using the ADAM format, which is a Avro/Parquet representation of genomics data.\n\nADAM is an open source project from Berkeley's AMPlab that also adds a genomics API on top of Spark."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Import some packages from ADAM and Spark"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -101,7 +117,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Hmmm What is a genotype?"
+    "source" : "### What defines a genotype?"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -153,16 +169,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Viva scala ... with system calls"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "import sys.process._",
-    "outputs" : [ ]
+    "source" : "### Now we'll read the metadata of the samples (persons)"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -179,29 +186,21 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "And get it from internet, save it locally"
+    "source" : "So the below cell is showing the showing the content which is basically associating a sample with:\n* population\n* enclosing population\n* gender"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "s\"wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel -O ${panelFile}\"!!",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "s\"head $panelFile\" !!",
+    "source" : ":sh head -n 5 $panelFile",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Broadcast the Map( sampleId -> population )\n\nGive every node in the cluster a copy of the Map"
+    "source" : "#### Now we parse the file and create a Map out of it"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -209,12 +208,29 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import scala.io.Source\ndef extract(filter: (String, String) => Boolean= (s, t) => true) = Source.fromFile(panelFile).getLines().map( line => {\n  val toks = line.split(\"\\t\").toList\n  toks(0) -> toks(1)\n}).toMap.filter( tup => filter(tup._1, tup._2) )\n  \n// panel extract from file, filtering by the 2 populations\ndef panel: Map[String,String] = \n  extract((sampleID: String, pop: String) => true) \n  \n// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
+    "source" : "import scala.io.Source\nval panel: Map[String,String] = Source.fromFile(panelFile) // open the file\n                                      .getLines()          // get iterator on lines\n                                      .map{ line =>        // map each line to a tuple (Sample, Population)\n                                        val toks = line.split(\"\\t\").toList // columns are sep. by TAB\n                                        (toks(0), toks(1))                 // 1st Sample, 2nd Population\n                                      }\n                                      .toMap",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Broadcast the Map ( sampleId -> population )\n\nGive every node in the cluster a copy of the Map. So this map won't have to be shipped with **each** task!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
     "source" : "### And we filter on the samples with a known population"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We get rid of the samples not found in the populations we kept in the Map above"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -238,6 +254,10 @@
     "cell_type" : "markdown",
     "source" : "### Some helper functions to format data from ADAM types to simpler schema"
   }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "These will be used to extract an ID for each variant."
+  }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
@@ -246,6 +266,10 @@
     "cell_type" : "code",
     "source" : "def variantid(g: Genotype): String = {\n  var v = g.getVariant\n  s\"${v.getContig.getContigName}\"\n}",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This helper is encoding the genotype in a small space where the manathan distance can be used between two genotypes."
   }, {
     "metadata" : {
       "trusted" : true,
@@ -270,7 +294,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "object gCtx extends java.io.Serializable {\n  case class FlatGenotype(\n  population: String,\n  sampleId: String,\n  chromosome: String,\n  start: Long,\n  ref: String,\n  alt: String,\n  refCnt: Long,\n  altCnt: Long\n    )\n}\nimport gCtx._\n    ",
+    "source" : "object gCtx extends java.io.Serializable {\n  case class FlatGenotype(\n    population: String,\n    sampleId: String,\n    chromosome: String,\n    start: Long,\n    ref: String,\n    alt: String,\n    refCnt: Long,\n    altCnt: Long\n  )\n}\nimport gCtx._\n    ",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -287,13 +311,13 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val flatgts = finalGts.flatMap{ g => \n               g.getAlleles.map{ ga => \n                 val al = allelesToPair(g, ga)\n                 FlatGenotype(bPanel.value.getOrElse(g.getSampleId(), \"\"),\n                              g.getSampleId,\n                              variantid(g),\n                              g.getVariant.getStart,\n                              g.getVariant.getReferenceAllele,\n                              g.getVariant.getAlternateAllele,\n                              al._1,\n                              al._2\n                               )\n                               }\n}",
+    "source" : "val flatgts = finalGts.flatMap{ g => \n                g.getAlleles.map{ ga => \n                  val al = allelesToPair(g, ga)\n                  FlatGenotype(\n                    bPanel.value.getOrElse(g.getSampleId(), \"\"),\n                    g.getSampleId,\n                    variantid(g),\n                    g.getVariant.getStart,\n                    g.getVariant.getReferenceAllele,\n                    g.getVariant.getAlternateAllele,\n                    al._1,\n                    al._2\n                  )\n                }\n              }",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "flatgts.cache()",
@@ -318,25 +342,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "gdf.cache()\n()",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "gdf.write.save(s\"$dataRoot/flat-genotypes13\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "",
+    "source" : "gdf.write.save(s\"/tmp/flat-genotypes13\")",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

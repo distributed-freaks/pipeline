@@ -1,163 +1,140 @@
 {
-  "metadata": {
-    "name": "Rest Call",
-    "user_save_timestamp": "1970-01-01T00:00:00.000Z",
-    "auto_save_timestamp": "1970-01-01T00:00:00.000Z",
-    "language_info": {
-      "name": "scala",
-      "file_extension": "scala",
-      "codemirror_mode": "text/x-scala"
+  "metadata" : {
+    "name" : "Rest Call",
+    "user_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
     },
-    "trusted": true,
-    "customLocalRepo": "/root/.ivy2",
-    "customRepos": null,
-    "customDeps": [
-      "com.typesafe.akka % akka-http-experimental_2.10 % 1.0",
-      "com.typesafe.akka % akka-http-spray-json-experimental_2.10 % 1.0"
-    ],
-    "customImports": null,
-    "customArgs": null,
-    "customSparkConf": {
-      "spark.executor.cores": "2",
-      "spark.master": "spark://127.0.0.1:7077",
-      "spark.cores.max": "2",
+    "trusted" : true,
+    "customLocalRepo" : "/root/.ivy2",
+    "customRepos" : null,
+    "customDeps" : [ "com.typesafe.akka % akka-http-experimental_2.10 % 1.0", "com.typesafe.akka % akka-http-spray-json-experimental_2.10 % 1.0" ],
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : {
+      "spark.executor.cores" : "2",
+      "spark.master" : "spark://127.0.0.1:7077",
+      "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host": "<cassandra-host>",
-      "spark.eventLog.enabled": "true",
-      "spark.executor.memory": "512m"
+      "spark.cassandra.connection.host" : "172.17.0.7",
+      "spark.eventLog.enabled" : "true",
+      "spark.executor.memory" : "512m"
     }
   },
-  "cells": [
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "# Querying an HTTP service using Akka HTTP"
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Querying an HTTP service using Akka HTTP"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Prepare Akka HTTP Client"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## Prepare Akka HTTP Client"
+    "cell_type" : "code",
+    "source" : "import scala.concurrent.Future\n\nimport akka.actor.ActorSystem\nimport akka.stream.ActorMaterializer\nimport akka.http.scaladsl.model._\nimport akka.http.scaladsl.Http\n\nimplicit val actorSystem = ActorSystem()\nimplicit val ec = actorSystem.dispatcher\nimplicit val materializer = ActorMaterializer()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Model"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Here we create the expected model for the Reponse.\n\n\n> Note that this information is conventional since the ~protocol (JSON) doesn't provide this information clearly (no schema)."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We also create the Spray JSON binding to deserialize the response automagically as instance of the reponse model."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "import scala.concurrent.Future\n\nimport akka.actor.ActorSystem\nimport akka.stream.ActorMaterializer\nimport akka.http.scaladsl.model._\nimport akka.http.scaladsl.Http\n\nimplicit val actorSystem = ActorSystem()\nimplicit val ec = actorSystem.dispatcher\nimplicit val materializer = ActorMaterializer()",
-      "outputs": []
+    "cell_type" : "code",
+    "source" : "object model {\n  case class AlleleRecord(\n    population: String,\n    chromosome: String,\n    start: Double,\n    ref: String,\n    alt: String,\n    refCnt: Double,\n    altCnt: Double)\n\n  import spray.json.DefaultJsonProtocol\n  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport\n\n  object AlleleProtocol extends DefaultJsonProtocol {\n    implicit val alleleRecordFormat = jsonFormat7(AlleleRecord.apply)\n  }\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Issue queries"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We wrap the query string creation into a quick helper.\n\nThe service is supposed to listen on the port `1111` and running on the same host.\n\nOkay the REST Service exposes two functions: `all` and `range`, here we model the `range` one that takes for parameters: `population`, `chromosome`, `start`, `end`.\n\nThe first two parameters are part of the URL, the latter are in the query string."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## Model"
+    "cell_type" : "code",
+    "source" : "def query(pop:String, chromosome:Int, start:Long, end:Long) = \n  s\"http://localhost:1111/$pop/$chromosome?start=$start&end=$end\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "The following cell demonstrates how a query can be issued over HTTP using Akka. \n\nAs we can see the result is of course a `Future` meaning that the call returns directly, but the real response will be available later."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "Here we create the expected model for the Reponse.\n\n\n> Note that this information is conventional since the ~protocol (JSON) doesn't provide this information clearly (no schema)."
+    "cell_type" : "code",
+    "source" : "val responseFuture: Future[HttpResponse] =\n  Http().singleRequest(HttpRequest(uri = query(\"CHB\", 22, 16050982, 16905526)))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now we can **adapt** the call to directly unmarshal the incoming bytes as JSON and successively to instances of `AlleleRecord`.\n\nActually, the deserialization is also a result that won't come directly. Indeed, the stream is **asynchronous** too (thing at Chunks for instance). \n\nHence we need to **`flatMap`** over the initial request's `Future` which means that the Future gets longer by including the deserialization."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "We also create the Spray JSON binding to deserialize the response automagically as instance of the reponse model."
+    "cell_type" : "code",
+    "source" : "import scala.concurrent.duration._\nimport akka.http.scaladsl.unmarshalling.Unmarshal\nimport akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._\nimport model.AlleleProtocol._\nval records = responseFuture.flatMap(r => Unmarshal(r.entity).to[Seq[model.AlleleRecord]])",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Explore the result"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "One way to get `Future` results is to simply block on its result, which can be done using `Await` and a timeout.\n\nSince the result is a sequence of elaborated data, the notebook will render them as a regular table using the fields as columns."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "object model {\n  case class AlleleRecord(\n    population: String,\n    chromosome: String,\n    start: Double,\n    ref: String,\n    alt: String,\n    refCnt: Double,\n    altCnt: Double)\n\n  import spray.json.DefaultJsonProtocol\n  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport\n\n  object AlleleProtocol extends DefaultJsonProtocol {\n    implicit val alleleRecordFormat = jsonFormat7(AlleleRecord.apply)\n  }\n}",
-      "outputs": []
+    "cell_type" : "code",
+    "source" : "val data = scala.concurrent.Await.result(records, 2 seconds)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "But we can also convert the information using `map` to plot the positions of the alleles against the ratio of the alternative allele count over the total count.\n\nSince we have a container of `Double` pairs, the notebook will propose several visualization including a line plot."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
     },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## Issue queries"
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "We wrap the query string creation into a quick helper.\n\nThe service is supposed to listen on the port `1111` and running on the same host.\n\nOkay the REST Service exposes two functions: `all` and `range`, here we model the `range` one that takes for parameters: `population`, `chromosome`, `start`, `end`.\n\nThe first two parameters are part of the URL, the latter are in the query string."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "def query(pop:String, chromosome:Int, start:Long, end:Long) = \n  s\"http://localhost:1111/$pop/$chromosome?start=$start&end=$end\"",
-      "outputs": []
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "The following cell demonstrates how a query can be issued over HTTP using Akka. \n\nAs we can see the result is of course a `Future` meaning that the call returns directly, but the real response will be available later."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "val responseFuture: Future[HttpResponse] =\n  Http().singleRequest(HttpRequest(uri = query(\"CHB\", 22, 16050982, 16905526)))",
-      "outputs": []
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "Now we can **adapt** the call to directly unmarshal the incoming bytes as JSON and successively to instances of `AlleleRecord`.\n\nActually, the deserialization is also a result that won't come directly. Indeed, the stream is **asynchronous** too (thing at Chunks for instance). \n\nHence we need to **`flatMap`** over the initial request's `Future` which means that the Future gets longer by including the deserialization."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "import scala.concurrent.duration._\nimport akka.http.scaladsl.unmarshalling.Unmarshal\nimport akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._\nimport model.AlleleProtocol._\nval records = responseFuture.flatMap(r => Unmarshal(r.entity).to[Seq[model.AlleleRecord]])",
-      "outputs": []
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "## Explore the result"
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "One way to get `Future` results is to simply block on its result, which can be done using `Await` and a timeout.\n\nSince the result is a sequence of elaborated data, the notebook will render them as a regular table using the fields as columns."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "val data = scala.concurrent.Await.result(records, 2 seconds)",
-      "outputs": []
-    },
-    {
-      "metadata": {},
-      "cell_type": "markdown",
-      "source": "But we can also convert the information using `map` to plot the positions of the alleles against the ratio of the alternative allele count over the total count.\n\nSince we have a container of `Double` pairs, the notebook will propose several visualization including a line plot."
-    },
-    {
-      "metadata": {
-        "trusted": true,
-        "input_collapsed": false,
-        "collapsed": false
-      },
-      "cell_type": "code",
-      "source": "data.map { ar =>\n  ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n}",
-      "outputs": []
-    }
-  ],
-  "nbformat": 4
+    "cell_type" : "code",
+    "source" : "data.map { ar =>\n  ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n}",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
 }
