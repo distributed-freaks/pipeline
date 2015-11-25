@@ -19,7 +19,7 @@
       "spark.master" : "spark://127.0.0.1:7077",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host" : "172.17.0.7",
+      "spark.cassandra.connection.host" : "<cassandra-host>",
       "spark.eventLog.enabled" : "true",
       "spark.executor.memory" : "512m"
     }
