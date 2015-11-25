@@ -19,7 +19,6 @@
       "spark.master" : "spark://127.0.0.1:7077",
       "spark.cores.max" : "2",
       "spark.eventLog.dir" : "logs/spark",
-      "spark.cassandra.connection.host" : "<cassandra-host>",
       "spark.eventLog.enabled" : "true",
       "spark.executor.memory" : "512m"
     }
@@ -120,7 +119,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val data = scala.concurrent.Await.result(records, 2 seconds)",
+    "source" : "val result = scala.concurrent.Await.result(records, 2 seconds)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -133,7 +132,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "data.map { ar =>\n  ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n}",
+    "source" : "result.map { ar =>\n  ar.start → (ar.altCnt.toDouble / (ar.refCnt + ar.altCnt))\n}",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
