@@ -63,31 +63,16 @@ RUN \
 
 # Spark Notebook
  && apt-get install -y screen \
- && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
- && tar xvzf spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
- && rm spark-notebook-0.6.2-SNAPSHOT-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
-
-# Spark Job Server (1 of 2)
- && wget https://s3-eu-west-1.amazonaws.com/distributed-pipeline/spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
- && tar xvzf spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
- && rm spark-jobserver-0.5.2-fluxcapacitor.tar.gz \
- && mkdir -p /root/pipeline/logs/spark-jobserver
+ && wget http://distributed-pipeline.s3.amazonaws.com/spark-notebook-master-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && tar xvzf spark-notebook-master-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && rm spark-notebook-master-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz \
+ && mv spark-notebook-* spark-notebook
 
 RUN \
 # Retrieve Latest Datasets, Configs, Code, and Start Scripts
  cd /root/pipeline \
  && git reset --hard && git pull \
  && chmod a+rx *.sh \
-
-# Spark Job Server (2 of 2)
- && ln /root/pipeline/config/spark-jobserver/pipeline.sh /root/spark-jobserver-0.5.2/config \
- && ln /root/pipeline/config/spark-jobserver/pipeline.conf /root/spark-jobserver-0.5.2/config \
- && cd /root/spark-jobserver-0.5.2 \
- && /root/sbt/bin/sbt job-server-tests/package \
- && bin/server_package.sh pipeline \
- && cp /tmp/job-server/* . \
- && rm -rf /tmp/job-server \
- && cd /root \
 
 # .profile Shell Environment Variables
  && mv /root/.profile /root/.profile.orig \
